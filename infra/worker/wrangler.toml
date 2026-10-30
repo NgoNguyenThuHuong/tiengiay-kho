@@ -1,0 +1,17 @@
+name = "tiengiay-r2-upload-worker"
+main = "src/index.ts"
+compatibility_date = "2024-10-01"
+
+# R2 Bucket Binding (tiengiay-kho) - Không dùng bất kỳ Access Key / Secret Key nào
+[[r2_buckets]]
+binding = "BUCKET"
+bucket_name = "tiengiay-kho"
+
+[vars]
+# SUPABASE_URL của project tiengiay-kho
+SUPABASE_URL = "https://syjlrhbhfmhkajvufbro.supabase.co"
+# Khóa anon công khai của Supabase (dùng để gọi API gateway kiểm tra user JWT)
+SUPABASE_ANON_KEY = "sb_publishable_r-AuooDdEIrbnAXxj1afzA_IIQCmzSG"
+# Danh sách origins được phép (phân cách bằng dấu phẩy, không dùng *)
+ALLOWED_ORIGINS = "http://localhost:3000,http://127.0.0.1:3000,https://tiengiay-kho.pages.dev"
+
