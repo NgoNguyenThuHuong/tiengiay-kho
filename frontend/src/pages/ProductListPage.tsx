@@ -21,6 +21,7 @@ import {
   Plus,
   Download,
   CheckCircle2,
+  Clock,
 } from 'lucide-react';
 
 const PAGE_SIZE = 24;
@@ -48,6 +49,8 @@ export const ProductListPage: React.FC = () => {
   // Statistics
   const [totalInventory, setTotalInventory] = useState<number | null>(null);
   const [totalNeedsPhotos, setTotalNeedsPhotos] = useState<number | null>(null);
+  const [totalApproved, setTotalApproved] = useState<number | null>(null);
+  const [totalPending, setTotalPending] = useState<number | null>(null);
 
   // Query state
   const [totalCount, setTotalCount] = useState(0);
@@ -115,19 +118,43 @@ export const ProductListPage: React.FC = () => {
   useEffect(() => {
     const fetchMetadata = async () => {
       try {
-        const [catRes, tagRes, totalProdRes, totalPhotosRes] = await Promise.all([
+        const [catRes, tagRes, totalProdRes, totalPhotosRes, totalApprovedRes, totalPendingRes] = await Promise.all([
           supabase.from('categories').select('id, name, slug, parent_id').order('name'),
           supabase.from('tags').select('id, name').order('name'),
           supabase.from('products').select('*', { count: 'exact', head: true }),
           supabase.from('products').select('*', { count: 'exact', head: true }).eq('needs_photos', true),
+          supabase.from('products').select('*', { count: 'exact', head: true }).eq('status', 'da_duyet'),
+          supabase.from('products').select('*', { count: 'exact', head: true }).eq('status', 'cho_duyet'),
         ]);
 
         if (catRes.data) setCategories(catRes.data);
         if (tagRes.data) setTags(tagRes.data);
-        if (totalProdRes.count !== null) setTotalInventory(totalProdRes.count);
-        if (totalPhotosRes.count !== null) setTotalNeedsPhotos(totalPhotosRes.count);
+        if (totalProdRes?.count !== null && totalProdRes?.count !== undefined) {
+          setTotalInventory(totalProdRes.count);
+        } else {
+          setTotalInventory(null);
+        }
+        if (totalPhotosRes?.count !== null && totalPhotosRes?.count !== undefined) {
+          setTotalNeedsPhotos(totalPhotosRes.count);
+        } else {
+          setTotalNeedsPhotos(null);
+        }
+        if (totalApprovedRes?.count !== null && totalApprovedRes?.count !== undefined) {
+          setTotalApproved(totalApprovedRes.count);
+        } else {
+          setTotalApproved(null);
+        }
+        if (totalPendingRes?.count !== null && totalPendingRes?.count !== undefined) {
+          setTotalPending(totalPendingRes.count);
+        } else {
+          setTotalPending(null);
+        }
       } catch (err) {
         console.error('Error fetching metadata:', err);
+        setTotalInventory(null);
+        setTotalNeedsPhotos(null);
+        setTotalApproved(null);
+        setTotalPending(null);
       }
     };
 
@@ -290,6 +317,17 @@ export const ProductListPage: React.FC = () => {
     setSearchParams(params);
   };
 
+  const handleToggleStatusFilter = (targetStatus: 'da_duyet' | 'cho_duyet') => {
+    const params = new URLSearchParams(searchParams);
+    if (statusParam === targetStatus) {
+      params.delete('status');
+    } else {
+      params.set('status', targetStatus);
+    }
+    params.set('page', '1');
+    setSearchParams(params);
+  };
+
   const handleTagChange = (tagId: string) => {
     const params = new URLSearchParams(searchParams);
     if (tagId) {
@@ -385,19 +423,47 @@ export const ProductListPage: React.FC = () => {
         <section className="stats-strip">
           <div className="stat-pill">
             <Package size={18} className="stat-pill-icon" />
-            <span>Tổng kho: <strong>{totalInventory !== null ? totalInventory : '...'}</strong> sản phẩm</span>
+            <span>Tổng kho: <strong>{totalInventory !== null ? totalInventory : '–'}</strong> sản phẩm</span>
           </div>
           <div
             className={`stat-pill clickable ${needsPhotosParam ? 'active' : ''}`}
             onClick={handleToggleNeedsPhotos}
-            title="Bấm để lọc sản phẩm cần chụp thêm ảnh"
+            title="Bấm để lọc sản phẩm cần chụp thêm ảnh (bấm lại để bỏ lọc)"
           >
             <Camera size={18} className="stat-pill-icon" />
-            <span>Cần chụp thêm ảnh: <strong>{totalNeedsPhotos !== null ? totalNeedsPhotos : '...'}</strong></span>
+            <span>Cần chụp thêm ảnh: <strong>{totalNeedsPhotos !== null ? totalNeedsPhotos : '–'}</strong></span>
           </div>
           <div className="stat-pill">
             <Layers size={18} className="stat-pill-icon" />
-            <span>Danh mục: <strong>{categories.length}</strong></span>
+            <span>Danh mục: <strong>{categories.length > 0 ? categories.length : '–'}</strong></span>
+          </div>
+          <div
+            className={`stat-pill clickable ${statusParam === 'da_duyet' ? 'active' : ''}`}
+            onClick={() => handleToggleStatusFilter('da_duyet')}
+            title="Bấm để lọc sản phẩm đã duyệt (bấm lại để bỏ lọc)"
+          >
+            <CheckCircle2
+              size={18}
+              className="stat-pill-icon"
+              style={{
+                color: statusParam === 'da_duyet' ? '#fff' : PRODUCT_STATUS_MAP.da_duyet.textColor,
+              }}
+            />
+            <span>Đã duyệt: <strong>{totalApproved !== null ? totalApproved : '–'}</strong></span>
+          </div>
+          <div
+            className={`stat-pill clickable ${statusParam === 'cho_duyet' ? 'active' : ''}`}
+            onClick={() => handleToggleStatusFilter('cho_duyet')}
+            title="Bấm để lọc sản phẩm chờ duyệt (bấm lại để bỏ lọc)"
+          >
+            <Clock
+              size={18}
+              className="stat-pill-icon"
+              style={{
+                color: statusParam === 'cho_duyet' ? '#fff' : PRODUCT_STATUS_MAP.cho_duyet.textColor,
+              }}
+            />
+            <span>Chờ duyệt: <strong>{totalPending !== null ? totalPending : '–'}</strong></span>
           </div>
         </section>
 

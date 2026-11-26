@@ -262,6 +262,21 @@ a {
   color: var(--orange-dark);
 }
 
+@media (max-width: 640px) {
+  .stats-strip {
+    gap: 8px;
+  }
+  .stat-pill {
+    padding: 6px 11px;
+    font-size: 12px;
+    gap: 6px;
+  }
+  .stat-pill .stat-pill-icon {
+    width: 15px;
+    height: 15px;
+  }
+}
+
 /* Filter Toolbar */
 .filter-toolbar {
   background: var(--card);
