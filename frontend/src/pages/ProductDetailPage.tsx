@@ -3,6 +3,7 @@ import { useParams, useNavigate, Link } from 'react-router-dom';
 import { supabase } from '../lib/supabase';
 import { Gallery } from '../components/Gallery';
 import type { Product, ProductImage, Tag } from '../types';
+import { getStatusMeta } from '../lib/status';
 import {
   ArrowLeft,
   Edit3,
@@ -72,6 +73,7 @@ export const ProductDetailPage: React.FC = () => {
 
         setProduct({
           ...prodData,
+          status: prodData.status || 'cho_duyet',
           category: prodData.categories ? {
             id: prodData.categories.id,
             name: prodData.categories.name,
@@ -203,6 +205,27 @@ export const ProductDetailPage: React.FC = () => {
             <div className="detail-card">
               <div className="detail-meta-top">
                 <span className="sku-tag">{product.sku}</span>
+                {(() => {
+                  const statusMeta = getStatusMeta(product.status);
+                  return (
+                    <span
+                      style={{
+                        fontSize: '13px',
+                        fontWeight: 700,
+                        padding: '4px 10px',
+                        borderRadius: '6px',
+                        backgroundColor: statusMeta.bgColor,
+                        color: statusMeta.textColor,
+                        border: `1px solid ${statusMeta.borderColor}`,
+                        display: 'inline-flex',
+                        alignItems: 'center',
+                      }}
+                      title={`Trạng thái: ${statusMeta.label}`}
+                    >
+                      {statusMeta.label}
+                    </span>
+                  );
+                })()}
                 {product.category && (
                   <span className="category-tag">
                     <Layers size={13} />

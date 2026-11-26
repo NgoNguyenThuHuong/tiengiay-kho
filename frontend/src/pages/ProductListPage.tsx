@@ -7,6 +7,7 @@ import { ProductCard } from '../components/ProductCard';
 import { Pagination } from '../components/Pagination';
 import type { Product, Category, Tag } from '../types';
 import { exportAllDataToCsv } from '../lib/exportCsv';
+import { ALL_PRODUCT_STATUSES, PRODUCT_STATUS_MAP } from '../lib/status';
 import {
   Search,
   Filter,
@@ -32,6 +33,7 @@ export const ProductListPage: React.FC = () => {
   const qParam = searchParams.get('q') || '';
   const categoryParam = searchParams.get('category') || '';
   const tagParam = searchParams.get('tag') || '';
+  const statusParam = searchParams.get('status') || '';
   const needsPhotosParam = searchParams.get('needs_photos') === 'true';
   const pageParam = parseInt(searchParams.get('page') || '1', 10);
 
@@ -155,6 +157,7 @@ export const ProductListPage: React.FC = () => {
           slug,
           source_url,
           needs_photos,
+          status,
           categories!category_id ( id, name, slug ),
           product_images ( object_key, position )
         `, { count: 'exact' });
@@ -197,6 +200,11 @@ export const ProductListPage: React.FC = () => {
         query = query.eq('needs_photos', true);
       }
 
+      // Filter by status
+      if (statusParam) {
+        query = query.eq('status', statusParam);
+      }
+
       // Pagination
       const currentPage = isNaN(pageParam) || pageParam < 1 ? 1 : pageParam;
       const from = (currentPage - 1) * PAGE_SIZE;
@@ -234,6 +242,7 @@ export const ProductListPage: React.FC = () => {
           slug: p.slug,
           source_url: p.source_url,
           needs_photos: p.needs_photos,
+          status: p.status || 'cho_duyet',
           category: p.categories ? {
             id: p.categories.id,
             name: p.categories.name,
@@ -252,7 +261,7 @@ export const ProductListPage: React.FC = () => {
     } finally {
       setLoading(false);
     }
-  }, [qParam, categoryParam, tagParam, needsPhotosParam, pageParam, categories]);
+  }, [qParam, categoryParam, tagParam, needsPhotosParam, statusParam, pageParam, categories]);
 
   useEffect(() => {
     fetchProducts();
@@ -265,6 +274,17 @@ export const ProductListPage: React.FC = () => {
       params.set('category', slug);
     } else {
       params.delete('category');
+    }
+    params.set('page', '1');
+    setSearchParams(params);
+  };
+
+  const handleStatusChange = (newStatus: string) => {
+    const params = new URLSearchParams(searchParams);
+    if (newStatus) {
+      params.set('status', newStatus);
+    } else {
+      params.delete('status');
     }
     params.set('page', '1');
     setSearchParams(params);
@@ -305,7 +325,7 @@ export const ProductListPage: React.FC = () => {
   };
 
   const totalPages = Math.ceil(totalCount / PAGE_SIZE) || 1;
-  const hasActiveFilters = Boolean(qParam || categoryParam || tagParam || needsPhotosParam);
+  const hasActiveFilters = Boolean(qParam || categoryParam || tagParam || needsPhotosParam || statusParam);
 
   return (
     <div className="product-list-page">
@@ -448,6 +468,21 @@ export const ProductListPage: React.FC = () => {
                 </select>
               </div>
             )}
+
+            {/* Status Dropdown */}
+            <div className="select-wrapper">
+              <select
+                value={statusParam}
+                onChange={(e) => handleStatusChange(e.target.value)}
+              >
+                <option value="">Tất cả trạng thái</option>
+                {ALL_PRODUCT_STATUSES.map((st) => (
+                  <option key={st} value={st}>
+                    {PRODUCT_STATUS_MAP[st].label}
+                  </option>
+                ))}
+              </select>
+            </div>
 
             {hasActiveFilters && (
               <button onClick={clearFilters} className="reset-filters-btn">

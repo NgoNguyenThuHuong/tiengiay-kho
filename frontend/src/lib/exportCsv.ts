@@ -87,6 +87,7 @@ export async function exportAllDataToCsv(
         notes,
         source_url,
         needs_photos,
+        status,
         categories ( slug ),
         product_tags ( tags ( name ) )
       `, { count: 'exact' })
@@ -175,6 +176,7 @@ export async function exportAllDataToCsv(
     'price_text',
     'description',
     'notes',
+    'status',
     'category_slug',
     'tags',
     'source_url',
@@ -196,6 +198,7 @@ export async function exportAllDataToCsv(
       escapeCsvCell(p.price_text),
       escapeCsvCell(p.description),
       escapeCsvCell(p.notes),
+      escapeCsvCell(p.status || 'cho_duyet'),
       escapeCsvCell(catSlug),
       escapeCsvCell(tagNames),
       escapeCsvCell(p.source_url),

@@ -1,3 +1,5 @@
+export type ProductStatus = 'cho_duyet' | 'da_duyet' | 'da_dang' | 'da_ban' | 'tam_an';
+
 export interface Product {
   id: string;
   sku: string;
@@ -13,6 +15,7 @@ export interface Product {
   slug: string | null;
   source_url: string | null;
   needs_photos: boolean;
+  status: ProductStatus;
   category?: Category | null;
   primary_image?: string | null;
 }
@@ -36,4 +39,3 @@ export interface Tag {
   id: string;
   name: string;
 }
-

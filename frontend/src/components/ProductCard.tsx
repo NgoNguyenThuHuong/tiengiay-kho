@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import type { Product } from '../types';
 import { ImageOff, Camera } from 'lucide-react';
+import { getStatusMeta } from '../lib/status';
 
 interface ProductCardProps {
   product: Product;
@@ -11,6 +12,7 @@ const R2_PUBLIC_BASE_URL = import.meta.env.VITE_R2_PUBLIC_BASE_URL || '';
 
 export const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
   const [imgError, setImgError] = useState(false);
+  const statusMeta = getStatusMeta(product.status);
 
   const imageUrl = product.primary_image && !imgError
     ? `${R2_PUBLIC_BASE_URL}/${product.primary_image}`
@@ -52,9 +54,27 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
       <div className="card-details">
         <div className="card-sku-row">
           <span className="card-sku">{product.sku}</span>
-          {product.category?.name && (
-            <span className="card-category-tag">{product.category.name}</span>
-          )}
+          <div style={{ display: 'flex', alignItems: 'center', gap: '5px' }}>
+            <span
+              style={{
+                fontSize: '11px',
+                fontWeight: 600,
+                padding: '1px 6px',
+                borderRadius: '4px',
+                backgroundColor: statusMeta.bgColor,
+                color: statusMeta.textColor,
+                border: `1px solid ${statusMeta.borderColor}`,
+                lineHeight: '1.4',
+                whiteSpace: 'nowrap',
+              }}
+              title={`Trạng thái: ${statusMeta.label}`}
+            >
+              {statusMeta.label}
+            </span>
+            {product.category?.name && (
+              <span className="card-category-tag">{product.category.name}</span>
+            )}
+          </div>
         </div>
         <h3 className="card-title" title={product.name}>
           {product.name}
